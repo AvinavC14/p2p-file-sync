@@ -7,8 +7,19 @@
 </head>
 <body>
     <form method="post" action="/upload" enctype="multipart/form-data">
-      <input type="file" name="Myfile"/>
+      <input type="file" name="Myfile"/>  
       <button type="submit">Submit</button>
     </form>
+    <table id="fileTable" border="1">
+      <thead>
+      <tr>
+        <th>Filename</th>
+      <th>Size</th>
+      <th>Uploaded On</th>
+      </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <script src="script.js"></script>
 </body>
 </html>
