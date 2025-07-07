@@ -4,10 +4,27 @@ const fs=require('fs')
 const path=require('path')
 const app=express();
 const port=3000;
+const chokidar=require('chokidar')
+const http=require('http')
+const {Server}=require('socket.io');
+
+const server=http.createServer(app)
+const io =new Server(server)
+
+//this returns the msg when is connection is successful
+io.on("connection",()=>{
+try{ 
+   console.log("User connected")
+}catch(err){
+  console.log("error in socket io connnection"+err)
+}
+})
+
+
+
 app.use(express.static(__dirname)); // This tells Express: "Serve any file (like script.js, index.html) from the current folder."
 
 const uploaddir=path.join(__dirname,"upload");//this is the path to the upload folder
-
 const storage = multer.diskStorage({
     //cb - callback
   destination: function (req, file, cb) {
@@ -17,6 +34,7 @@ const storage = multer.diskStorage({
     cb(null,`${Date.now()}+${file.originalname}`) // cb(error,file name)
   }
 })
+
 //this function reads  and gets the metadata  for each file in the upload folder using fs.stat(file system)
 const getfileMetadata=()=>{
   //this reads all the files in upload folder one by one
@@ -49,6 +67,23 @@ app.get("/",(req,res)=>{
 res.sendFile(__dirname + '/index.html');
 })
 
+//using chokidar to detect file change and socket io to emit the res
+chokidar.watch('./upload').on('all',(event,filePath)=>{
+try{ 
+  const fullpath=path.join(__dirname,filePath) // the path to the file where the event(add or modification) occured
+  const fileName=path.basename(fullpath)
+  console.log(`${event} occured at path ${filePath}`);
+ if(event== 'change' || event == 'add'){
+  const fileContent=fs.readFileSync(fullpath)
+  io.emit('filesync',{event,fileName,content:fileContent.toString('base64')})//encoding the file content with base64 which converts binarydata into text for safety
+ }else if(event=='unlink'){
+  io.emit('filesync',{event,fileName})
+ }
+}catch(e){
+  console.log("error in emiting file content"+e)
+}})
+
+//this enables the user to download the file from /upload
 app.get("/download",(req,res)=>{
  const fileName=req.query.filename;
   res.download(`${__dirname}/upload/${fileName}`,(err)=>{
@@ -59,5 +94,7 @@ app.get("/download",(req,res)=>{
   })
 
 })
-
-app.listen(port,()=>{console.log("Listening at http://localhost:3000")})
+//this the socket io server
+server.listen(port, () => {
+  console.log("Server Listening at http://localhost:3000");
+});
