@@ -11,10 +11,23 @@ const {Server}=require('socket.io');
 const server=http.createServer(app)
 const io =new Server(server)
 
+//io-this is the socket io server instance
+//socket-is a specific connected client (per user)
+
 //this returns the msg when is connection is successful
-io.on("connection",()=>{
+io.on("connection",(socket)=>{
 try{ 
-   console.log("User connected")
+   console.log("User connected",socket.id); 
+   //this is for signaling to initiate webrtc using socket io
+socket.on("signal",({to,data})=>{
+io.to(to).emit("signal",{from:socket.id,data}) 
+})
+
+//this nofies the peers when a new peer joins except the one who joined(therfore the use of broadcast.emit)
+socket.on("join", () => {
+  socket.broadcast.emit("peer-joined", socket.id);
+  console.log(`User ${socket.id} has joined`);
+});
 }catch(err){
   console.log("error in socket io connnection"+err)
 }
