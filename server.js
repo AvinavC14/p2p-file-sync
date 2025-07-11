@@ -108,6 +108,6 @@ app.get("/download",(req,res)=>{
 
 })
 //this the socket io server
-server.listen(port, () => {
+server.listen(port,'0.0.0.0', () => {
   console.log("Server Listening at http://localhost:3000");
 });
