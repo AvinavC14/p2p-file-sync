@@ -14,7 +14,7 @@ A simple **peer-to-peer (P2P)** file synchronization system built using **Node.j
 - 🕵️‍♂️ Uses **STUN** servers to discover public IP addresses
 - 📂 Watches file changes using **Chokidar**
 - 🔁 Syncs newly created, modified, and deleted files
-- 📱 Works on mobile (e.g., Termux) and desktop
+
 
 ---
 
